@@ -1,0 +1,14 @@
+[config]
+# Web Server control
+# web_host: ip address to listen on.
+# web_port: port to listen on.
+web_host = "0.0.0.0"
+web_port = 8080
+
+# Application log output
+# write_logs: enable writing to a log file.
+# write_logs_file: file to write logs to if enabled.
+write_logs = false
+write_logs_file = "./data/conga.log"
+# NOTE:
+#   Logging level can be changed via `.env` or system environment variable 'CONGA_LOG_LEVEL'. (warn, info, debug)

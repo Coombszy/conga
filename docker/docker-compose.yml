@@ -1,0 +1,8 @@
+version: '3.3'
+
+services:
+  conga:
+    container_name: conga
+    image: coombszy/conga:1.0.0 # Latest currently refers to Legacy
+    volumes:
+      - ./config:/app/config
