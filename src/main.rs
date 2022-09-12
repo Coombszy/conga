@@ -5,7 +5,7 @@ use libs::{
     utils::draw_start_screen,
 };
 
-use actix_web::{web, App, HttpServer, http};
+use actix_web::{http, web, App, HttpServer};
 use chrono::Utc;
 use dotenv::dotenv;
 use log::{debug, info, LevelFilter};
@@ -16,7 +16,7 @@ use std::sync::{Arc, Mutex};
 use std::vec;
 use std::{env, str::FromStr};
 
-use crate::libs::{structs::AppState, utils::{load_config_toml}};
+use crate::libs::{structs::AppState, utils::load_config_toml};
 
 const DATA_FOLDER: &str = "config/";
 
@@ -31,14 +31,14 @@ async fn main() -> std::io::Result<()> {
     let port: u16 = toml_data.clone().config.web_port;
     info!("Starting web server, listening on {host}:{port}");
     HttpServer::new(move || {
-
         let cors = Cors::default()
             .allowed_origin("http://localhost:5500/") // For local development
-            .allowed_origin_fn(|origin, _req_head| {
-                origin.as_bytes().ends_with(b".coombszy.com")
-            })
+            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".coombszy.com"))
             .allowed_methods(vec!["POST", "GET"])
-            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::CONTENT_TYPE])
+            .allowed_headers(vec![
+                http::header::AUTHORIZATION,
+                http::header::CONTENT_TYPE,
+            ])
             .supports_credentials()
             .max_age(3600);
 
