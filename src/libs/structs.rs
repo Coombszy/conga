@@ -68,7 +68,7 @@ pub struct Meta {
 // Item to be queued
 #[derive(Deserialize, Serialize, Clone)]
 pub struct Item {
-    pub recipient_secret: String,
+    pub queue: String,
     pub content: serde_json::Value,
     pub meta: Option<Meta>,
 }

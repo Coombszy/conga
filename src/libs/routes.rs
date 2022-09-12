@@ -68,7 +68,7 @@ async fn add_item(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[get("/items/preview/{recipient_secret}")]
+#[get("/items/preview/{queue}")]
 async fn get_items(
     data: web::Data<AppState>,
     path: web::Path<String>,
@@ -81,7 +81,7 @@ async fn get_items(
     let mut filtered_items: Vec<Item> = Vec::new();
 
     for item in items.iter() {
-        if item.recipient_secret == rs_query {
+        if item.queue == rs_query {
             filtered_items.push(item.clone());
         }
     }
@@ -91,7 +91,7 @@ async fn get_items(
         .json(filtered_items))
 }
 
-#[get("/items/{recipient_secret}")]
+#[get("/items/{queue}")]
 async fn fetch_items(
     data: web::Data<AppState>,
     path: web::Path<String>,
@@ -106,7 +106,7 @@ async fn fetch_items(
 
     // Get items to return and a list of items to cleanup from shared queue
     for (i, item) in items.iter().enumerate() {
-        if item.recipient_secret == rs_query {
+        if item.queue == rs_query {
             items_cleanup.push(i);
             return_items.push(item.clone());
         }
