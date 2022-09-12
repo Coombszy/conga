@@ -16,7 +16,7 @@ use std::sync::{Arc, Mutex};
 use std::vec;
 use std::{env, str::FromStr};
 
-use crate::libs::{structs::AppState, utils::load_config_toml};
+use crate::libs::{structs::AppState, utils::load_config_toml, middleware::{ Auth}};
 
 const DATA_FOLDER: &str = "config/";
 
@@ -32,8 +32,9 @@ async fn main() -> std::io::Result<()> {
     info!("Starting web server, listening on {host}:{port}");
     HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:5500/") // For local development
-            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".coombszy.com"))
+            .allow_any_origin()
+            // .allowed_origin("http://localhost:5500/") // For local development
+            // .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".coombszy.com")) // coombszy.com deployments
             .allowed_methods(vec!["POST", "GET"])
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
@@ -43,6 +44,7 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
 
         App::new()
+            .wrap(Auth)
             .wrap(cors)
             .app_data(web::Data::new(AppState {
                 start_time: Utc::now(),

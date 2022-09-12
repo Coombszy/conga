@@ -1,7 +1,7 @@
 [package]
 name = "conga"
 description = "Basic HTTP queue that stores JSON objects in memory."
-version = "1.0.0-cors"
+version = "1.0.0-mw"
 edition = "2021"
 authors = ["Coombszy <LCCoombs@hotmail.co.uk>"]
 
