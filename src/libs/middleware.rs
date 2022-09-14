@@ -1,10 +1,10 @@
-use std::future::{ready, Ready};
+use std::{future::{ready, Ready}, pin::Pin};
 
 use actix_web::{
     dev::{self, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, web::Data,
+    Error, web::Data, error::ErrorUnauthorized, Either, HttpResponse, ResponseError,
 };
-use futures_util::future::LocalBoxFuture;
+use futures_util::{future::LocalBoxFuture, Future};
 
 use crate::libs::structs::AppState;
 
@@ -38,17 +38,25 @@ where
     B: 'static,
 {
     type Response = ServiceResponse<B>;
-    type Error = Error;
-    type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Error = S::Error;
+    // type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 
     dev::forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         println!("Hi from start. You requested: {}", req.path());
 
-        let app_data = req.app_data::<Data<AppState>>().unwrap();
+        let app_state = req.app_data::<Data<AppState>>().unwrap();
+        let headers = req.headers();
 
-        println!("{}", app_data.start_time);
+        if !headers.contains_key("Authorization") {
+            let res = req.error_response(Error::error_response(&self));
+            return Ok(res);
+        }
+        
+
+        println!("{}", app_state.start_time);
 
         let fut = self.service.call(req);
 
@@ -58,5 +66,6 @@ where
             println!("Hi from response");
             Ok(res)
         })
+
     }
 }
