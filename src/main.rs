@@ -54,6 +54,7 @@ async fn main() -> std::io::Result<()> {
                     _ => vec![],
                 },
             }))
+            .service(libs::routes::auth)
             .service(libs::routes::health)
             .service(libs::routes::add_item)
             .service(libs::routes::get_items)

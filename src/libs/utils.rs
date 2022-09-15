@@ -30,6 +30,7 @@ pub fn load_config_toml(filename: String) -> TOMLData {
 
 // Function that returns true if an api key is valid, else false
 pub fn validate_api_key(app_state: &AppState, key: &String) -> bool {
+    if app_state.api_keys.is_empty() { return true; }
     app_state.api_keys.contains(key)
 }
 
