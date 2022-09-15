@@ -16,7 +16,7 @@ use std::sync::{Arc, Mutex};
 use std::vec;
 use std::{env, str::FromStr};
 
-use crate::libs::{middleware::Auth, structs::AppState, utils::load_config_toml};
+use crate::libs::{structs::AppState, utils::load_config_toml};
 
 const DATA_FOLDER: &str = "config/";
 

@@ -5,12 +5,9 @@ use std::{
 
 use actix_web::{
     dev::{self, Service, ServiceRequest, ServiceResponse, Transform},
-    error::ErrorUnauthorized,
-    http::header,
-    web::Data,
-    Either, Error, HttpResponse, ResponseError,
+    web::Data, Error,
 };
-use futures_util::{future::LocalBoxFuture, Future};
+use futures_util::{Future};
 
 use crate::libs::{structs::AppState, utils::validate_api_key};
 
