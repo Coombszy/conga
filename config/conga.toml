@@ -12,3 +12,7 @@ write_logs = false
 write_logs_file = "./data/conga.log"
 # NOTE:
 #   Logging level can be changed via `.env` or system environment variable 'CONGA_LOG_LEVEL'. (warn, info, debug)
+
+# Authorization
+# api_keys: Keys found in `Authorization` header that allow API access. If empty, authorization is disabled
+api_keys = ["123SecretApiKey"]

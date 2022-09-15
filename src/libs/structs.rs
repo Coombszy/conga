@@ -22,7 +22,7 @@ pub struct Config {
     pub web_port: u16,
     pub write_logs: bool,
     pub write_logs_file: String,
-    pub api_keys: Option<Vec<String>>
+    pub api_keys: Option<Vec<String>>,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +32,7 @@ pub struct Config {
 pub struct AppState {
     pub start_time: DateTime<Utc>,
     pub item_queue: Arc<Mutex<Vec<Item>>>,
+    pub api_keys: Vec<String>,
 }
 // Global state impls
 impl AppState {

@@ -1,12 +1,18 @@
-use std::{future::{ready, Ready}, pin::Pin};
+use std::{
+    future::{ready, Ready},
+    pin::Pin,
+};
 
 use actix_web::{
     dev::{self, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, web::Data, error::ErrorUnauthorized, Either, HttpResponse, ResponseError,
+    error::ErrorUnauthorized,
+    http::header,
+    web::Data,
+    Either, Error, HttpResponse, ResponseError,
 };
 use futures_util::{future::LocalBoxFuture, Future};
 
-use crate::libs::structs::AppState;
+use crate::libs::{structs::AppState, utils::validate_api_key};
 
 pub struct Auth;
 
@@ -39,33 +45,29 @@ where
 {
     type Response = ServiceResponse<B>;
     type Error = S::Error;
-    // type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
 
     dev::forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        println!("Hi from start. You requested: {}", req.path());
-
         let app_state = req.app_data::<Data<AppState>>().unwrap();
         let headers = req.headers();
 
-        if !headers.contains_key("Authorization") {
-            let res = req.error_response(Error::error_response(&self));
-            return Ok(res);
+        let mut auth_success = false;
+        if headers.contains_key("Authorization") {
+            let key = headers.get("Authorization").unwrap().to_str().unwrap();
+            auth_success = validate_api_key(app_state, &key.to_string());
         }
-        
-
-        println!("{}", app_state.start_time);
 
         let fut = self.service.call(req);
-
         Box::pin(async move {
-            let res = fut.await?;
-
-            println!("Hi from response");
-            Ok(res)
+            if auth_success {
+                let res = fut.await?;
+                Ok(res)
+            } else {
+                let error = actix_web::error::ErrorUnauthorized("Unauthorized");
+                Err(error)
+            }
         })
-
     }
 }

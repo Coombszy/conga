@@ -347,7 +347,7 @@ dependencies = [
 
 [[package]]
 name = "conga"
-version = "1.0.0-mw"
+version = "1.0.0"
 dependencies = [
  "actix-cors",
  "actix-web",

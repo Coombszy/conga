@@ -7,7 +7,10 @@ use chrono::Utc;
 use futures_util::StreamExt as _;
 use log::debug;
 
-use crate::libs::structs::{AppState, Item, Meta, WebError, WebHealth};
+use crate::libs::{
+    middleware::Auth,
+    structs::{AppState, Item, Meta, WebError, WebHealth},
+};
 
 const MAX_PAYLOAD_SIZE: usize = 262_144; // Max size of 256k
 
@@ -33,7 +36,13 @@ async fn health(data: web::Data<AppState>) -> HttpResponse {
         })
 }
 
-#[post("/item")]
+#[get("/auth", wrap = "Auth")]
+async fn auth() -> Result<HttpResponse, Error> {
+    debug!("Auth request received");
+    Ok(HttpResponse::NoContent().finish())
+}
+
+#[post("/item", wrap = "Auth")]
 async fn add_item(
     data: web::Data<AppState>,
     mut payload: web::Payload,
@@ -68,7 +77,7 @@ async fn add_item(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[get("/items/preview/{queue}")]
+#[get("/items/preview/{queue}", wrap = "Auth")]
 async fn get_items(
     data: web::Data<AppState>,
     path: web::Path<String>,
@@ -91,7 +100,7 @@ async fn get_items(
         .json(filtered_items))
 }
 
-#[get("/items/{queue}")]
+#[get("/items/{queue}", wrap = "Auth")]
 async fn fetch_items(
     data: web::Data<AppState>,
     path: web::Path<String>,

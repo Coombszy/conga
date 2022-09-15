@@ -16,7 +16,7 @@ use std::sync::{Arc, Mutex};
 use std::vec;
 use std::{env, str::FromStr};
 
-use crate::libs::{structs::AppState, utils::load_config_toml, middleware::{ Auth}};
+use crate::libs::{middleware::Auth, structs::AppState, utils::load_config_toml};
 
 const DATA_FOLDER: &str = "config/";
 
@@ -44,11 +44,15 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
 
         App::new()
-            .wrap(Auth)
+            // .wrap(Auth)
             .wrap(cors)
             .app_data(web::Data::new(AppState {
                 start_time: Utc::now(),
                 item_queue: queue.clone(),
+                api_keys: match toml_data.clone().config.api_keys {
+                    Some(keys) => keys,
+                    _ => vec![],
+                },
             }))
             .service(libs::routes::health)
             .service(libs::routes::add_item)
