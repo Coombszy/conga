@@ -5,9 +5,10 @@ use std::{
 
 use actix_web::{
     dev::{self, Service, ServiceRequest, ServiceResponse, Transform},
-    web::Data, Error,
+    web::Data,
+    Error,
 };
-use futures_util::{Future};
+use futures_util::Future;
 
 use crate::libs::{structs::AppState, utils::validate_api_key};
 
@@ -50,8 +51,8 @@ where
         let app_state = req.app_data::<Data<AppState>>().unwrap();
         let headers = req.headers();
 
-        let mut auth_success = false;
-        if headers.contains_key("Authorization") {
+        let mut auth_success = app_state.api_keys.is_empty();
+        if headers.contains_key("Authorization") && !app_state.api_keys.is_empty() {
             let key = headers.get("Authorization").unwrap().to_str().unwrap();
             auth_success = validate_api_key(app_state, &key.to_string());
         }
