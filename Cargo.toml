@@ -4,6 +4,7 @@ description = "Basic HTTP queue that stores JSON objects in memory."
 version = "1.0.0"
 edition = "2021"
 authors = ["Coombszy <LCCoombs@hotmail.co.uk>"]
+license = "GPL-3.0"
 
 [dependencies]
 # Configs

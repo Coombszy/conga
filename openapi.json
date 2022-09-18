@@ -1,0 +1,167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "conga",
+    "description": "Basic HTTP queue that stores JSON objects in memory.",
+    "contact": { "name": "Coombszy", "email": "LCCoombs@hotmail.co.uk" },
+    "license": { "name": "GPL-3.0" },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/auth": {
+      "get": {
+        "tags": ["routes"],
+        "summary": "Validate auth",
+        "description": "Validate auth\n\nAllows checking if an API key is authorized\n",
+        "operationId": "auth",
+        "responses": {
+          "204": { "description": "API is valid" },
+          "401": { "description": "API is not valid" }
+        },
+        "deprecated": false,
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["routes"],
+        "summary": "Check health of service",
+        "description": "Check health of service\n\nChecks the health of the service as well as include uptime\n",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Contains service uptime",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WebHealth" }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/item": {
+      "post": {
+        "tags": ["routes"],
+        "summary": "Add item",
+        "description": "Add item\n\nAdd item to a target queue\n",
+        "operationId": "add_item",
+        "responses": {
+          "204": { "description": "Successfully added item to queue" },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Not authorized" }
+        },
+        "deprecated": false,
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/items/preview/{queue}": {
+      "get": {
+        "tags": ["routes"],
+        "summary": "Preview item queue",
+        "description": "Preview item queue\n\nPreview items in a queue, without ingesting them\n",
+        "operationId": "get_items",
+        "parameters": [
+          {
+            "name": "queue",
+            "in": "path",
+            "description": "Target queue",
+            "required": true,
+            "deprecated": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items currently in queue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Item" }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Not authorized" }
+        },
+        "deprecated": false,
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/items/{queue}": {
+      "get": {
+        "tags": ["routes"],
+        "summary": "Fetch item queue",
+        "description": "Fetch item queue\n\nFetch items from a queue. This will ingest them\n",
+        "operationId": "fetch_items",
+        "parameters": [
+          {
+            "name": "queue",
+            "in": "path",
+            "description": "Target queue",
+            "required": true,
+            "deprecated": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items fetched from queue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Item" }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Not authorized" }
+        },
+        "deprecated": false,
+        "security": [{ "api_key": [] }]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "required": ["queue", "content"],
+        "properties": {
+          "content": { "$ref": "#/components/schemas/serde_json.Value" },
+          "meta": { "$ref": "#/components/schemas/Meta" },
+          "queue": { "type": "string" }
+        }
+      },
+      "Meta": {
+        "type": "object",
+        "required": ["received_epoch"],
+        "properties": {
+          "received_epoch": { "type": "integer", "format": "int64" }
+        }
+      },
+      "WebError": {
+        "type": "object",
+        "required": ["timestamp", "error"],
+        "properties": {
+          "error": { "type": "string" },
+          "timestamp": { "type": "string" }
+        }
+      },
+      "WebHealth": {
+        "type": "object",
+        "required": ["uptime"],
+        "properties": { "uptime": { "type": "string" } }
+      }
+    },
+    "securitySchemes": {
+      "api_key": { "type": "apiKey", "in": "header", "name": "Authorization" }
+    }
+  },
+  "tags": []
+}
