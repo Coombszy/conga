@@ -8,7 +8,7 @@ use libs::{
 use actix_cors::Cors;
 use actix_web::{
     http,
-    web::{self, Data},
+    web::{self},
     App, HttpServer,
 };
 use chrono::Utc;
