@@ -1,15 +1,18 @@
 mod libs;
-use actix_cors::Cors;
 use libs::{
-    structs::{CargoPkgInfo, Item, TOMLData},
+    structs::{CargoPkgInfo, Item, TOMLData, WebHealth, WebError, Meta},
     utils::draw_start_screen,
+    routes
 };
 
-use actix_web::{http, web, App, HttpServer};
+use actix_cors::Cors;
+use actix_web::{http, web::{self, Data}, App, HttpServer};
 use chrono::Utc;
 use dotenv::dotenv;
 use log::{debug, info, LevelFilter};
 use simplelog::*;
+use utoipa::{openapi::{security::{SecurityScheme, ApiKey, ApiKeyValue}}, Modify, OpenApi};
+use utoipa_swagger_ui::SwaggerUi;
 
 use std::fs::File;
 use std::sync::{Arc, Mutex};
@@ -24,6 +27,37 @@ const DATA_FOLDER: &str = "config/";
 async fn main() -> std::io::Result<()> {
     let toml_data: TOMLData = startup();
 
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(
+            routes::health,
+            routes::auth,
+            routes::add_item,
+            routes::get_items,
+            routes::fetch_items
+        ),
+        components(
+            schemas(WebHealth, WebError, Meta, Item)
+        ),
+        tags(),
+        modifiers(&SecurityAddon)
+    )]
+    struct ApiDoc;
+
+    struct SecurityAddon;
+
+    impl Modify for SecurityAddon {
+        fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+            let components = openapi.components.as_mut().unwrap();
+            components.add_security_scheme(
+                "api_key",
+                SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("Authorization"))),
+            )
+        }
+    }
+    // Make instance variable of ApiDoc so all worker threads gets the same instance.
+    let openapi = ApiDoc::openapi();
+
     let queue = Arc::new(Mutex::new(Vec::<Item>::new()));
 
     // Start Web
@@ -33,8 +67,6 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
-            // .allowed_origin("http://localhost:5500/") // For local development
-            // .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".coombszy.com")) // coombszy.com deployments
             .allowed_methods(vec!["POST", "GET"])
             .allowed_headers(vec![
                 http::header::AUTHORIZATION,
@@ -44,7 +76,6 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
 
         App::new()
-            // .wrap(Auth)
             .wrap(cors)
             .app_data(web::Data::new(AppState {
                 start_time: Utc::now(),
@@ -54,11 +85,16 @@ async fn main() -> std::io::Result<()> {
                     _ => vec![],
                 },
             }))
-            .service(libs::routes::auth)
-            .service(libs::routes::health)
-            .service(libs::routes::add_item)
-            .service(libs::routes::get_items)
-            .service(libs::routes::fetch_items)
+            .service(routes::auth)
+            .service(routes::health)
+            .service(routes::add_item)
+            .service(routes::get_items)
+            .service(routes::fetch_items)
+            // Extras
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}")
+                .url("/api-doc/openapi.json", openapi.clone()),
+            )
     })
     .bind((host, port))?
     .run()

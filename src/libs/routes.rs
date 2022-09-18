@@ -26,6 +26,14 @@ fn generate_metadata() -> Meta {
     }
 }
 
+/// Check health of service 
+/// 
+/// Checks the health of the service as well as include uptime
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Contains service uptime", body = WebHealth)
+    )
+)]
 #[get("/health")]
 async fn health(data: web::Data<AppState>) -> HttpResponse {
     debug!("Health request received");
@@ -36,12 +44,38 @@ async fn health(data: web::Data<AppState>) -> HttpResponse {
         })
 }
 
+/// Validate auth
+///
+/// Allows checking if an API key is authorized
+#[utoipa::path(
+    responses(
+        (status = 204, description = "API is valid"),
+        (status = 401, description = "API is not valid")
+    ),
+    security(
+        ("api_key" = [])
+    )
+)]
 #[get("/auth", wrap = "Auth")]
 async fn auth() -> Result<HttpResponse, Error> {
     debug!("Auth request received");
     Ok(HttpResponse::NoContent().finish())
 }
 
+/// Add item
+/// 
+/// Add item to a target queue
+#[utoipa::path(
+    responses(
+        (status = 204, description = "Successfully added item to queue"),
+        (status = 401, description = "Not authorized"),
+        (status = 400, description = "Bad request")
+    ),
+    security(
+        ("api_key" = [])
+    )
+    
+)]
 #[post("/item", wrap = "Auth")]
 async fn add_item(
     data: web::Data<AppState>,
@@ -77,6 +111,22 @@ async fn add_item(
     Ok(HttpResponse::NoContent().finish())
 }
 
+/// Preview item queue
+/// 
+/// Preview items in a queue, without ingesting them
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Items currently in queue", body = [Item]),
+        (status = 401, description = "Not authorized"),
+        (status = 400, description = "Bad request")
+    ),
+    params(
+        ("queue" = String, Path, description = "Target queue")
+    ),
+    security(
+        ("api_key" = [])
+    )
+)]
 #[get("/items/preview/{queue}", wrap = "Auth")]
 async fn get_items(
     data: web::Data<AppState>,
@@ -100,6 +150,22 @@ async fn get_items(
         .json(filtered_items))
 }
 
+/// Fetch item queue
+/// 
+/// Fetch items from a queue. This will ingest them
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Items fetched from queue", body = [Item]),
+        (status = 401, description = "Not authorized"),
+        (status = 400, description = "Bad request")
+    ),
+    params(
+        ("queue" = String, Path, description = "Target queue")
+    ),
+    security(
+        ("api_key" = [])
+    )
+)]
 #[get("/items/{queue}", wrap = "Auth")]
 async fn fetch_items(
     data: web::Data<AppState>,

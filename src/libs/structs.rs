@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 pub struct CargoPkgInfo {
     pub name: String,
@@ -40,35 +41,36 @@ impl AppState {
     pub fn uptime(&self) -> String {
         let duration: Duration = Utc::now() - self.start_time;
 
-        let hours = duration.num_hours();
+        let days = duration.num_days();
+        let hours = duration.num_hours() % 24;
         let minutes = duration.num_minutes() % 60;
         let seconds = duration.num_seconds() % 60;
 
-        return format!("{hours:02}:{minutes:02}:{seconds:02}",);
+        return format!("{days:02} {hours:02}:{minutes:02}:{seconds:02}",);
     }
 }
 
 // Reponse error
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct WebError {
     pub timestamp: String,
     pub error: String,
 }
 
 // Web route 'health' response body
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct WebHealth {
     pub uptime: String,
 }
 
 // Web route 'health' response body
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, ToSchema)]
 pub struct Meta {
     pub received_epoch: i64,
 }
 
 // Item to be queued
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, ToSchema)]
 pub struct Item {
     pub queue: String,
     pub content: serde_json::Value,
