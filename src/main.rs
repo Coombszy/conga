@@ -1,17 +1,24 @@
 mod libs;
 use libs::{
-    structs::{CargoPkgInfo, Item, TOMLData, WebHealth, WebError, Meta},
+    routes,
+    structs::{CargoPkgInfo, Item, Meta, TOMLData, WebError, WebHealth},
     utils::draw_start_screen,
-    routes
 };
 
 use actix_cors::Cors;
-use actix_web::{http, web::{self, Data}, App, HttpServer};
+use actix_web::{
+    http,
+    web::{self, Data},
+    App, HttpServer,
+};
 use chrono::Utc;
 use dotenv::dotenv;
 use log::{debug, info, LevelFilter};
 use simplelog::*;
-use utoipa::{openapi::{security::{SecurityScheme, ApiKey, ApiKeyValue}}, Modify, OpenApi};
+use utoipa::{
+    openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
+    Modify, OpenApi,
+};
 use utoipa_swagger_ui::SwaggerUi;
 
 use std::fs::File;
@@ -92,8 +99,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::fetch_items)
             // Extras
             .service(
-                SwaggerUi::new("/swagger-ui/{_:.*}")
-                .url("/api-doc/openapi.json", openapi.clone()),
+                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-doc/openapi.json", openapi.clone()),
             )
     })
     .bind((host, port))?

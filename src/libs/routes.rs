@@ -26,8 +26,8 @@ fn generate_metadata() -> Meta {
     }
 }
 
-/// Check health of service 
-/// 
+/// Check health of service
+///
 /// Checks the health of the service as well as include uptime
 #[utoipa::path(
     responses(
@@ -63,7 +63,7 @@ async fn auth() -> Result<HttpResponse, Error> {
 }
 
 /// Add item
-/// 
+///
 /// Add item to a target queue
 #[utoipa::path(
     responses(
@@ -74,7 +74,6 @@ async fn auth() -> Result<HttpResponse, Error> {
     security(
         ("api_key" = [])
     )
-    
 )]
 #[post("/item", wrap = "Auth")]
 async fn add_item(
@@ -112,7 +111,7 @@ async fn add_item(
 }
 
 /// Preview item queue
-/// 
+///
 /// Preview items in a queue, without ingesting them
 #[utoipa::path(
     responses(
@@ -151,7 +150,7 @@ async fn get_items(
 }
 
 /// Fetch item queue
-/// 
+///
 /// Fetch items from a queue. This will ingest them
 #[utoipa::path(
     responses(
