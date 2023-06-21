@@ -7,14 +7,29 @@ apt-get update && apt-get upgrade -qq
 apt-get install --install-recommends -y perl openssl libssl-dev librust-openssl-dev \
 	build-essential ca-certificates
 
+# Raspi 1/2/3 (armv7)
 if [ "$1" = "linux/arm/v7" ] 
 then
-    rm -f target/armv7-unknown-linux-gnueabihf/release/deps/conga-*
-    apt-get install --install-recommends -y gcc-arm-linux-gnueabihf pkg-config
+    rm -f target/armv7-unknown-linux-gnueabihf/release/deps/$2
+    apt-get install --install-recommends -y gcc-arm-linux-gnueabihf
     rustup target add armv7-unknown-linux-gnueabihf
-    cargo build --release --target armv7-unknown-linux-gnueabihf; code=$?
+    cargo build --release --bin $2 --target armv7-unknown-linux-gnueabihf ; code=$?
     mkdir -p /target/release
-    cp target/armv7-unknown-linux-gnueabihf/release/conga target/release/
+    ls -ltra target/armv7-unknown-linux-gnueabihf/release/
+    cp target/armv7-unknown-linux-gnueabihf/release/$2 target/release/
+    exit $code
+fi
+
+# Raspi 4 (arm64)
+if [ "$1" = "linux/arm64" ] 
+then
+    rm -f target/aarch64-unknown-linux-gnu/release/deps/$2
+    apt-get install --install-recommends -y gcc-aarch64-linux-gnu
+    rustup target add aarch64-unknown-linux-gnu
+    cargo build --release --bin $2 --target aarch64-unknown-linux-gnu ; code=$?
+    mkdir -p /target/release
+    ls -ltra target/aarch64-unknown-linux-gnu/release/
+    cp target/aarch64-unknown-linux-gnu/release/$2 target/release/
     exit $code
 fi
 

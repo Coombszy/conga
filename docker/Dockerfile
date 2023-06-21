@@ -9,17 +9,17 @@ COPY ./scripts/cross-compile.sh ./cross-compile.sh
 COPY ./.cargo/config ./.cargo/config
 RUN chmod +x ./cross-compile.sh
 ARG TARGETPLATFORM
-RUN ./cross-compile.sh ${TARGETPLATFORM}
+RUN ./cross-compile.sh ${TARGETPLATFORM} conga
 RUN rm src/*.rs
 
 # Build conga
 COPY ./src ./src
 ARG TARGETPLATFORM
-RUN ./cross-compile.sh ${TARGETPLATFORM}
+RUN ./cross-compile.sh ${TARGETPLATFORM} conga
 RUN ls -ltra /conga/target/release
 
 # Create image
-FROM ubuntu:latest
+FROM --platform=$TARGETPLATFORM ubuntu:latest
 
 # Copy binary and sample data/config
 WORKDIR /app
